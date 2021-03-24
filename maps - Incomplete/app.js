@@ -11,39 +11,39 @@ let marker1;
 let map;
 
 function distance(lat1, lon1, lat2, lon2, unit) {
-	if ((lat1 == lat2) && (lon1 == lon2)) {
-		return 0;
-	}
-	else {
-		var radlat1 = Math.PI * lat1/180;
-		var radlat2 = Math.PI * lat2/180;
-		var theta = lon1-lon2;
-		var radtheta = Math.PI * theta/180;
-		var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
-		if (dist > 1) {
-			dist = 1;
-		}
-		dist = Math.acos(dist);
-		dist = dist * 180/Math.PI;
-		dist = dist * 60 * 1.1515;
-		if (unit=="K") { dist = dist * 1.609344 }
-		if (unit=="N") { dist = dist * 0.8684 }
-		return `${dist.toFixed(2)} km`;
-	}
+  if ((lat1 == lat2) && (lon1 == lon2)) {
+    return 0;
+  }
+  else {
+    var radlat1 = Math.PI * lat1 / 180;
+    var radlat2 = Math.PI * lat2 / 180;
+    var theta = lon1 - lon2;
+    var radtheta = Math.PI * theta / 180;
+    var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+    if (dist > 1) {
+      dist = 1;
+    }
+    dist = Math.acos(dist);
+    dist = dist * 180 / Math.PI;
+    dist = dist * 60 * 1.1515;
+    if (unit == "K") { dist = dist * 1.609344 }
+    if (unit == "N") { dist = dist * 0.8684 }
+    return `${dist.toFixed(2)} km`;
+  }
 }
 
 navigator.geolocation.getCurrentPosition(function (position) {
   console.log(position);
   latitude = position.coords.latitude;
   longitude = position.coords.longitude;
-  displayMap(longitude, latitude, 13);
+  displayMap(longitude, latitude, 13, "My Location");
 }, function error(err) {
   alert(`ERROR(${err.code}): ${err.message}
   DEFAULT LOCATION: (-74.5, 40)` );
-  displayMap(-74.5, 40, 9);
+  displayMap(-74.5, 40, 9, "Default Location");
 }, { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 });
 
-function displayMap(lng, lat, zoom) {
+function displayMap(lng, lat, zoom, label) {
   mapboxgl.accessToken = 'pk.eyJ1IjoibmFuZGluaS1hIiwiYSI6ImNrbW1iN2xqdjFqYmYycG80bmo2bDYwN24ifQ.GQN5FI2XaZYpt8KKxYcMQQ';
   map = new mapboxgl.Map({
     container: 'map', // container id
@@ -51,9 +51,15 @@ function displayMap(lng, lat, zoom) {
     center: [lng, lat], // starting position [lng, lat]
     zoom: zoom // starting zoom
   });
+
   marker1 = new mapboxgl.Marker()
     .setLngLat([lng, lat])
-    .addTo(map);
+    .addTo(map)
+    .setPopup(
+      new mapboxgl.Popup()
+        .setHTML(label)
+        .addTo(map)
+    );
 }
 
 form.onsubmit = e => {
@@ -101,9 +107,10 @@ function displayLocations(locations) {
 
 poi.onclick = e => {
   let poiListElement = e.target.closest('.poi');
+  let poiULListElement = poiListElement.querySelector("ul .name");
 
   if (poiListElement !== null) {
     marker1.remove();
-    displayMap(poiListElement.dataset.long, poiListElement.dataset.lat, 15);;
+    displayMap(poiListElement.dataset.long, poiListElement.dataset.lat, 15, poiULListElement.innerHTML);
   }
 }
