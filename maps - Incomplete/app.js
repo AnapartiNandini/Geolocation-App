@@ -7,7 +7,7 @@ poi.innerHTML = "";
 search.value = "";
 let latitude;
 let longitude;
-let marker1;
+let marker;
 let map;
 
 function distance(lat1, lon1, lat2, lon2, unit) {
@@ -43,7 +43,7 @@ navigator.geolocation.getCurrentPosition(function (position) {
   displayMap(-74.5, 40, 9, "Default Location");
 }, { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 });
 
-function displayMap(lng, lat, zoom, label) {
+function displayMap(lng, lat, zoom, labelHeader, labelSubHeader) {
   mapboxgl.accessToken = 'pk.eyJ1IjoibmFuZGluaS1hIiwiYSI6ImNrbW1iN2xqdjFqYmYycG80bmo2bDYwN24ifQ.GQN5FI2XaZYpt8KKxYcMQQ';
   map = new mapboxgl.Map({
     container: 'map', // container id
@@ -51,15 +51,25 @@ function displayMap(lng, lat, zoom, label) {
     center: [lng, lat], // starting position [lng, lat]
     zoom: zoom // starting zoom
   });
-
-  marker1 = new mapboxgl.Marker()
-    .setLngLat([lng, lat])
-    .addTo(map)
-    .setPopup(
-      new mapboxgl.Popup()
-        .setHTML(label)
-        .addTo(map)
-    );
+  if (labelSubHeader !== undefined) {
+    marker = new mapboxgl.Marker()
+      .setLngLat([lng, lat])
+      .addTo(map)
+      .setPopup(
+        new mapboxgl.Popup()
+          .setHTML(`<h3>${labelHeader}</h3><h4>${labelSubHeader}</h4>`)
+          .addTo(map)
+      );
+  } else {
+    marker = new mapboxgl.Marker()
+      .setLngLat([lng, lat])
+      .addTo(map)
+      .setPopup(
+        new mapboxgl.Popup()
+          .setHTML(`<h3>${labelHeader}</h3>`)
+          .addTo(map)
+      );
+  }
 }
 
 form.onsubmit = e => {
@@ -107,10 +117,11 @@ function displayLocations(locations) {
 
 poi.onclick = e => {
   let poiListElement = e.target.closest('.poi');
-  let poiULListElement = poiListElement.querySelector("ul .name");
+  let labelHeader = poiListElement.querySelector("ul .name");
+  let labelSubHeader = poiListElement.querySelector("ul .street-address");
 
   if (poiListElement !== null) {
-    marker1.remove();
-    displayMap(poiListElement.dataset.long, poiListElement.dataset.lat, 15, poiULListElement.innerHTML);
+    marker.remove();
+    displayMap(poiListElement.dataset.long, poiListElement.dataset.lat, 15, labelHeader.innerHTML, labelSubHeader.innerHTML);
   }
 }
